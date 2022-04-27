@@ -10,7 +10,12 @@ app.use(express.json());
 
 app.post("/task", (req, res) => {
     const user1 = new User(req.body);
-    res.send(user1);
+
+    user1.save().then(() => {
+        res.send(user1);
+    }).catch(error => {
+        res.status(400).send(error.message);
+    })
 });
 
 app.listen(port, () => {
