@@ -39,6 +39,24 @@ app.get("/user/:id", async(req, res) => {
     };
 });
 
+app.patch("/user/:id", async(req, res) => {
+    const {id} = req.params;
+
+    // if changes are not including
+    const allowUpdate = ["name", "email", "password", "phone"];
+    const updates = Object.keys(req.body);
+    
+    const isValidOperation = updates.every(update => allowUpdate.includes(update));
+    if(!isValidOperation) return res.status(400).send("Invalid Updates!");
+    try{
+        const newUser = await User.findByIdAndUpdate(id, req.body, {new: true, runValidators: true});
+        if(!newUser) return res.status(404).send();
+        res.send(newUser);
+    }catch(error) {
+        res.status(500).send(error.message);
+    };
+});
+
 app.post("/tasks", async(req, res) => {
     try{
         const task = await new Task(req.body);
@@ -65,7 +83,7 @@ app.get("/task/:id", async(req, res) => {
         if(!task) return res.status(404).send();
         res.send(task);
     }catch(err){
-        res.status(500).send(err.message)
+        res.status(500).send(err.message);
     };
 });
 
