@@ -45,6 +45,22 @@ app.post("/tasks", (req, res) => {
     })
 });
 
+app.get("/tasks", (req, res) => {
+    Task.find({})
+    .then(tasks => res.send(tasks))
+    .catch(err => res.status(500).send(err.message));
+});
+
+app.get("/task/:id", (req, res) => {
+    const {id}= req.params;
+    Task.findById(id)
+    .then((task) => {
+        if(!task) return res.status(404).send();
+        res.send(task);
+    })
+    .catch(err => res.status(500).send(err.message));
+});
+
 app.listen(port, () => {
     console.log(`Server is up ${port}`)
 });
