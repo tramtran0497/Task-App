@@ -1,4 +1,5 @@
 const express = require("express");
+const Task = require("./models/Task");
 require('dotenv').config();
 const User = require("./models/User");
 require("./db/mongoose");
@@ -8,11 +9,27 @@ const port = process.env.PORT;
 
 app.use(express.json());
 
-app.post("/task", (req, res) => {
-    const user1 = new User(req.body);
+app.post("/users", (req, res) => {
+    const user = new User(req.body);
 
-    user1.save().then(() => {
+    user.save().then(() => {
         res.send(user1);
+    }).catch(error => {
+        res.status(400).send(error.message);
+    })
+});
+
+app.get("/users", (req, res) => {
+    User.find({})
+        .then(users => res.send(users))
+        .catch(err => res.send(err.message));
+});
+
+app.post("/tasks", (req, res) => {
+    const task = new Task(req.body);
+
+    task.save().then(() => {
+        res.send(task);
     }).catch(error => {
         res.status(400).send(error.message);
     })
