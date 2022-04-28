@@ -29,6 +29,8 @@ app.get("/users", async(req, res) => {
 });
 
 app.get("/user/:id", async(req, res) => {
+    const {id}= req.params;
+
     try{
         const {id}= req.params;
         const user = await User.findById(id);
@@ -57,6 +59,17 @@ app.patch("/user/:id", async(req, res) => {
     };
 });
 
+app.delete("/user/:id", async(req, res) =>{
+    const {id}= req.params;
+
+    try{
+        await User.findByIdAndDelete(id);
+        res.send("Successful delete!");
+    }catch(error) {
+        res.status(500).send(error.message);
+    }
+});
+
 app.post("/tasks", async(req, res) => {
     try{
         const task = await new Task(req.body);
@@ -77,8 +90,9 @@ app.get("/tasks", async(req, res) => {
 });
 
 app.get("/task/:id", async(req, res) => {
+    const {id}= req.params;
+
     try{
-        const {id}= req.params;
         const task = await Task.findById(id);
         if(!task) return res.status(404).send();
         res.send(task);
@@ -103,6 +117,17 @@ app.patch("/task/:id", async(req, res) => {
     }catch(error) {
         res.status(500).send(error.message);
     };
+});
+
+app.delete("/task/:id", async(req, res) =>{
+    const {id}= req.params;
+
+    try{
+        await Task.findByIdAndDelete(id);
+        res.send("Successful delete!");
+    }catch(error) {
+        res.status(500).send(error.message);
+    }
 });
 
 app.listen(port, () => {
