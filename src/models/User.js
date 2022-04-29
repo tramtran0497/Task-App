@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
+const res = require('express/lib/response');
 
 const userScheme = new mongoose.Schema({
         name:{
@@ -12,6 +13,7 @@ const userScheme = new mongoose.Schema({
         },
         email:{
             type: String,
+            unique: true,
             required: true,
             trim: true,
             lowercase: true, 
@@ -35,6 +37,17 @@ const userScheme = new mongoose.Schema({
         }
     }
 );
+
+userScheme.statics.findByCredentials = async(email, password) => {
+    const user = await User.findOne({email});
+
+    if(!user) throw new Error("Unable to login! Try again.");
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if(!isMatch) throw new Error("User Invalid!")
+
+    return user;
+};
 
 userScheme.pre("save", async function(next) {
     //user shows created user
