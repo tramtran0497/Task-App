@@ -17,7 +17,9 @@ router.post("/users/login", async(req, res) => {
    try{
         // from findByCredentials() return user 
         const user = await User.findByCredentials(email, password);
-        res.send(user);
+        // create token
+        const token = await user.createAuthToken();
+        res.send({user, token});
    }catch(err) {
        res.status(400).send(err.message);
    }

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
 const res = require('express/lib/response');
-
+const jwt = require("jsonwebtoken");
 const userScheme = new mongoose.Schema({
         name:{
             type: String,
@@ -34,9 +34,24 @@ const userScheme = new mongoose.Schema({
             type: Number,
             trim: true,
             required: true,
-        }
+        },
+        tokens: [
+            {
+                token: {
+                    type: String,
+                    required: true,
+                }
+            }
+        ]
     }
 );
+
+userScheme.methods.createAuthToken = async() => {
+    const user = this;
+    const token = jwt.sign({_id: user._id}, "tramtrandeveloper", {expiresIn: "2 days"});
+
+    return token;
+};
 
 userScheme.statics.findByCredentials = async(email, password) => {
     const user = await User.findOne({email});
