@@ -3,14 +3,12 @@ const validator = require('validator');
 const bcrypt = require('bcrypt');
 const res = require('express/lib/response');
 const jwt = require("jsonwebtoken");
-const { UUID } = require('bson');
 
 const userScheme = new mongoose.Schema({
     // TO DO: refactoring _id 
         id: {
             type: String,
             unique: true,
-            required: true,
         },
         name:{
             type: String,
@@ -50,12 +48,15 @@ const userScheme = new mongoose.Schema({
 
 userScheme.methods.createAuthToken = async function(){
     const user = this;
-    const token = jwt.sign({ _id: user._id }, "developer", {expiresIn: "1 day"});
+    user.id = user._id;
+
+    const token = jwt.sign({ _id: user.id }, "developer", {expiresIn: "1 day"});
+    console.log("AS", user)
     // adding a token in tokens array
     user.tokens.push(token);
     await user.save();
 
-    return user;
+    return token;
 };
 
 userScheme.statics.findByCredentials = async(email, password) => {
