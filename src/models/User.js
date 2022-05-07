@@ -46,6 +46,18 @@ const userScheme = new mongoose.Schema({
     }
 );
 
+//The solution is to define a custom .toJSON() method on the Mongoose schema and delete the properties which you don’t want to return in the response.
+// Hide private info
+userScheme.methods.toJSON = function() {
+    const user = this;
+    const userObject = user.toObject();
+
+    delete userObject.password;
+    delete userObject.tokens;
+
+    return userObject;
+}; 
+
 userScheme.methods.createAuthToken = async function(){
     const user = this;
 
