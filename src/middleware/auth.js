@@ -6,8 +6,9 @@ const auth = async(req, res, next) => {
         // take token from header params
         const token = req.header("Authorization").replace("Bearer ", "");
         const decoded = jwt.verify(token, process.env.SECRET);
-        const user = await User.findById(decoded.id);
+        const user = await User.findById({_id: decoded.id, "tokens": token});
         
+        if(!user) throw new Error("Try again, invalid account.");
         req.user = user;
         next();
     } catch(error) {
