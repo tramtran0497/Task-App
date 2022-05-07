@@ -27,7 +27,17 @@ router.post("/users/login", async(req, res) => {
    }
 });
 
-router.get("/users", auth, async(req, res) => {
+router.post("/logout", auth, async(req, res) => {
+    try{
+        req.user.tokens = [];
+        await req.user.save();
+        res.send("Log out");
+    } catch(error) {
+        res.status(400).send(error.message);
+    }
+});
+
+router.get("/users", async(req, res) => {
     try{
         const users = await User.find({});
         res.send(users);
@@ -53,11 +63,9 @@ router.patch("/user/username", auth, async(req, res) => {
     const isValidOperation = updates.every(update => allowUpdate.includes(update));
     if(!isValidOperation) return res.status(400).send("Invalid Updates!");
     try{
-        const user = await User.findById(req.user._id);
-        // update changes
-        updates.forEach(update => user[update] = req.body[update]);
-        await user.save();
-        res.send(user)
+        updates.forEach(update => req.user[update] = req.body[update]);
+        await req.user.save();
+        res.send(req.user)
     }catch(error) {
         res.status(500).send(error.message);
     };
@@ -65,7 +73,7 @@ router.patch("/user/username", auth, async(req, res) => {
 
 router.delete("/user/username", auth, async(req, res) =>{
     try{
-        await User.findByIdAndDelete(req.user._id);
+        await req.user.remove();
         res.send("Successful delete!");
     }catch(error) {
         res.status(500).send(error.message);
