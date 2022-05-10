@@ -3,6 +3,7 @@ const validator = require('validator');
 const bcrypt = require('bcrypt');
 const res = require('express/lib/response');
 const jwt = require("jsonwebtoken");
+const Task = require('./Task');
 
 const userScheme = new mongoose.Schema({
     // TO DO: refactoring _id 
@@ -42,9 +43,16 @@ const userScheme = new mongoose.Schema({
         },
         tokens: [{
             type: String,
-        }]
+        }],
     }
 );
+
+// Relationship between User and Task
+userScheme.virtual("tasks", {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
+  })
 
 //The solution is to define a custom .toJSON() method on the Mongoose schema and delete the properties which you don’t want to return in the response.
 // Hide private info
@@ -89,6 +97,13 @@ userScheme.pre("save", async function(next) {
     };
     next();
 });
+
+// Delete all tasks before delete user
+userScheme.pre("remove", async function(next) {
+    const user = this;
+    await Task.deleteMany({owner: user._id});
+    next();
+}); 
 
 const User = mongoose.model("User", userScheme);
 

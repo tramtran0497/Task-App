@@ -49,7 +49,7 @@ router.get("/users", async(req, res) => {
 router.get("/user/username", auth, async(req, res) => {
     try{
         const user = await User.findById(req.user._id);
-        if(!user) return res.status(404).send();
+        // await user.populate("tasks");
         res.send(user);
     }catch(err) {
         res.status(500).send(err.message);
