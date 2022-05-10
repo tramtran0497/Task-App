@@ -4,7 +4,16 @@ const router = new express.Router();
 const auth = require("../middleware/auth");
 const multer = require("multer");
 const upload = multer({
-    dest: "avatar"
+    dest: "avatar",
+    limits: {
+        fileSize: 100000
+    },
+    fileFilter(req, file, cb) {
+        if(!file.originalname.match(/\.(jpg|png|jpeg)$/)) {
+            return cb(new Error("Please upload file with extension jpeg, png, jpg"));
+        }
+        cb(undefined, true);
+    }
 });
 
 router.post("/users", async(req, res) => {
