@@ -16,9 +16,18 @@ router.post("/tasks", auth, async(req, res) => {
     }
 });
 
+// sort. filter and paginating get tasks
+
 router.get("/tasks", auth, async(req, res) => {
+    const match = {};
+    if(req.query.completed) {
+        match.isCompleted = req.query.completed;
+    };
     try{
-        await req.user.populate("tasks");
+        await req.user.populate({
+            path: "tasks",
+            match
+        });
         res.send(req.user.tasks);
     }catch(err){
         res.status(500).send(err.message);
