@@ -29,8 +29,9 @@ router.post("/users", async(req, res) => {
 router.post("/user/username/avatar", auth, upload.single("avatar"), async(req, res) => {
     // it shows binary form, so hiding avatar when showing data after getting users
     req.user.avatar = req.file.buffer;
+
     await req.user.save();
-    res.send(req.user);
+    res.send("Uploaded avatar!");
 }, (error, req, res, next) => {
     res.status(400).send({error: error.message})
 });
@@ -152,6 +153,21 @@ router.delete("/user/username/avatar", auth, async(req, res) => {
         res.send("Successful Delete Avatar")
     } catch(error) {
         res.status(500).send({error: error.message});
+    }
+});
+
+router.get("/user/:id/avatar", async(req, res) => {
+    try{
+        const user = await User.findById(req.params.id);
+        if(!user || !user.avatar) {
+            throw new Error("It seems your user is invalid!")
+        };
+
+        // setting content file images
+        res.set("Content-Type", "image/png");
+        res.send(user.avatar)
+    } catch(error) {
+        res.status(404).send({error: error.message});
     }
 });
 
