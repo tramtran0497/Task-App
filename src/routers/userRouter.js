@@ -4,6 +4,7 @@ const router = new express.Router();
 const auth = require("../middleware/auth");
 const multer = require("multer");
 const sharp = require('sharp');
+const { sendCanceledAccount, sendWelcomeAccount } = require("../emails/account");
 
 const upload = multer({
     limits: {
@@ -18,26 +19,16 @@ const upload = multer({
 });
 
 router.post("/users", async(req, res) => {
+    const user = await new User(req.body);
     try{
-        const user = await new User(req.body);
+        await user.save();
+        sendWelcomeAccount(user.email, user.name);
          // create token
          const token = await user.createAuthToken();
         res.send({user, token});
     }catch(error){
         res.status(400).send({error: error.message});
     };
-});
-
-router.post("/user/username/avatar", auth, upload.single("avatar"), async(req, res) => {
-    // req.user.avatar = req.file.buffer;
-    // taking binary form from req.file.buffer, then resize, convert to png type and turn back it.
-    const buffer = await sharp(req.file.buffer).resize({width: 250, height: 250}).png().toBuffer();
-    req.user.avatar = buffer 
-
-    await req.user.save();
-    res.send("Uploaded avatar!");
-}, (error, req, res, next) => {
-    res.status(400).send({error: error.message})
 });
 
 router.post("/users/login", async(req, res) => {
@@ -99,13 +90,15 @@ router.patch("/user/username", auth, async(req, res) => {
 
 router.delete("/user/username", auth, async(req, res) =>{
     try{
-        await req.user.remove();
-        res.send("Successful delete!");
+        console.log(req.user)
+        sendCanceledAccount(req.user.email, req.user.name);
+        await User.findByIdAndDelete(req.user._id);
+        res.send("Successful deleted!")
     }catch(error) {
         res.status(500).send({error: error.message});
     }
 });
-
+// -----------------------------------------------------
 router.get("/user/:id", auth, async(req, res) => {
     const {id}= req.params;
 
@@ -141,15 +134,16 @@ router.patch("/user/:id", async(req, res) => {
     };
 });
 
-router.delete("/user/username", auth, async(req, res) =>{
+router.delete("/user/:id", auth, async(req, res) =>{
+    const {id} = req.params;
     try{
-        await User.findByIdAndDelete(req.user._id);
+        await User.findByIdAndDelete(id);
         res.send("Successful delete!");
     }catch(error) {
         res.status(500).send({error: error.message});
     }
 });
-
+// -----------------------------------------------------
 router.delete("/user/username/avatar", auth, async(req, res) => {
     try{
         req.user.avatar = undefined;
@@ -158,6 +152,18 @@ router.delete("/user/username/avatar", auth, async(req, res) => {
     } catch(error) {
         res.status(500).send({error: error.message});
     }
+});
+
+router.post("/user/username/avatar", auth, upload.single("avatar"), async(req, res) => {
+    // req.user.avatar = req.file.buffer;
+    // taking binary form from req.file.buffer, then resize, convert to png type and turn back it.
+    const buffer = await sharp(req.file.buffer).resize({width: 250, height: 250}).png().toBuffer();
+    req.user.avatar = buffer 
+
+    await req.user.save();
+    res.send("Uploaded avatar!");
+}, (error, req, res, next) => {
+    res.status(400).send({error: error.message})
 });
 
 router.get("/user/:id/avatar", async(req, res) => {
