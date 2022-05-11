@@ -3,6 +3,8 @@ const User = require("../models/User");
 const router = new express.Router();
 const auth = require("../middleware/auth");
 const multer = require("multer");
+const sharp = require('sharp');
+
 const upload = multer({
     limits: {
         fileSize: 1000000
@@ -27,8 +29,10 @@ router.post("/users", async(req, res) => {
 });
 
 router.post("/user/username/avatar", auth, upload.single("avatar"), async(req, res) => {
-    // it shows binary form, so hiding avatar when showing data after getting users
-    req.user.avatar = req.file.buffer;
+    // req.user.avatar = req.file.buffer;
+    // taking binary form from req.file.buffer, then resize, convert to png type and turn back it.
+    const buffer = await sharp(req.file.buffer).resize({width: 250, height: 250}).png().toBuffer();
+    req.user.avatar = buffer 
 
     await req.user.save();
     res.send("Uploaded avatar!");
@@ -162,8 +166,7 @@ router.get("/user/:id/avatar", async(req, res) => {
         if(!user || !user.avatar) {
             throw new Error("It seems your user is invalid!")
         };
-
-        // setting content file images
+        // setting content type images/png
         res.set("Content-Type", "image/png");
         res.send(user.avatar)
     } catch(error) {

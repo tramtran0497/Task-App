@@ -9,16 +9,6 @@ const taskRouter = require("./routers/taskRouter");
 const app = express();
 const port = process.env.PORT;
 
-// checking upload
-const multer = require("multer")
-const upload = multer({
-    dest: "images"
-})
-
-app.post("/upload", upload.single("upload"), (req, res) => {
-    res.send()
-})
-
 app.use(express.json());
 app.use(userRouter);
 app.use(taskRouter);
