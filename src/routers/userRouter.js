@@ -4,7 +4,6 @@ const router = new express.Router();
 const auth = require("../middleware/auth");
 const multer = require("multer");
 const upload = multer({
-    dest: "avatar",
     limits: {
         fileSize: 1000000
     },
@@ -28,7 +27,10 @@ router.post("/users", async(req, res) => {
 });
 
 router.post("/user/username/avatar", auth, upload.single("avatar"), async(req, res) => {
-    res.send();
+    // it shows binary form, so hiding avatar when showing data after getting users
+    req.user.avatar = req.file.buffer;
+    await req.user.save();
+    res.send(req.user);
 }, (error, req, res, next) => {
     res.status(400).send({error: error.message})
 });
@@ -134,13 +136,21 @@ router.patch("/user/:id", async(req, res) => {
     };
 });
 
-router.delete("/user/:id", async(req, res) =>{
-    const {id}= req.params;
-
+router.delete("/user/username", auth, async(req, res) =>{
     try{
-        await User.findByIdAndDelete(id);
+        await User.findByIdAndDelete(req.user._id);
         res.send("Successful delete!");
     }catch(error) {
+        res.status(500).send({error: error.message});
+    }
+});
+
+router.delete("/user/username/avatar", auth, async(req, res) => {
+    try{
+        req.user.avatar = undefined;
+        await req.user.save();
+        res.send("Successful Delete Avatar")
+    } catch(error) {
         res.status(500).send({error: error.message});
     }
 });
