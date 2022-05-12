@@ -90,7 +90,6 @@ router.patch("/user/username", auth, async(req, res) => {
 
 router.delete("/user/username", auth, async(req, res) =>{
     try{
-        console.log(req.user)
         sendCanceledAccount(req.user.email, req.user.name);
         await User.findByIdAndDelete(req.user._id);
         res.send("Successful deleted!")

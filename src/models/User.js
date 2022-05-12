@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcrypt');
-const res = require('express/lib/response');
 const jwt = require("jsonwebtoken");
 const Task = require('./Task');
 
