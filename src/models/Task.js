@@ -8,7 +8,6 @@ const taskSchema = new mongoose.Schema( {
         required: true,
         minlength: [4, "Your task name is too short, at least having 4 characters."],
         trim: true,
-
     },
     description:{
         type: String,

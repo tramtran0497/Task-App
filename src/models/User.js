@@ -6,10 +6,6 @@ const Task = require('./Task');
 
 const userScheme = new mongoose.Schema({
     // TO DO: refactoring _id 
-        id: {
-            type: String,
-            unique: true,
-        },
         name:{
             type: String,
             required: true,
